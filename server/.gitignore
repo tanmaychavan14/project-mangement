@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+# Spring config files (secrets)
+application.properties
+application.yml
+application-*.properties
+application-*.yml
+
