@@ -6,7 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "student_groups",
       uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"groupName",  "batch"})
+        @UniqueConstraint(columnNames = {"groupName",  "batch", "currentYear"})
       })
 @Getter
 @Setter

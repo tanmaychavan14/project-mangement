@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "roll_number", nullable = false, unique = true)
+    @Column(name = "roll_number", nullable = false)
     private String rollNumber;   // used by students
 
     @Column(nullable = false)
