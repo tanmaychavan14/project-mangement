@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StudentGroupResponse {
-
+    private Long groupId;
     private String groupName;
     private String batch;
     private Integer currentYear;

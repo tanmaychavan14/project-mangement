@@ -89,6 +89,7 @@ public class StudentGroupService {
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
         StudentGroupResponse response = new StudentGroupResponse();
+        response.setGroupId(group.getId());
         response.setGroupName(group.getGroupName());
         response.setBatch(group.getBatch());
         response.setCurrentYear(group.getCurrentYear());
@@ -101,6 +102,7 @@ public class StudentGroupService {
 
                 FacultyResponse faculty = new FacultyResponse();
                 faculty.setName(group.getGuideId().getName());
+                faculty.setRollNumber(group.getGuideId().getRollNumber());
                 response.setGuide(faculty);
 
 
@@ -121,5 +123,97 @@ public class StudentGroupService {
 
         return response;
     }
+
+
+
+    @Transactional
+    public void updateGroupAndMembers(
+            Long groupId,
+            UpdateStudentGroupRequest request) {
+
+        StudentGroup group = studentGroupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        // -------- update group fields --------
+
+        if(request.getGroupName()!= null){
+            group.setGroupName(request.getGroupName());
+        }
+        if (request.getProjectTitle() != null)
+            group.setProjectTitle(request.getProjectTitle());
+
+        if (request.getProjectDomain() != null)
+            group.setProjectDomain(request.getProjectDomain());
+
+        if (request.getStatus() != null)
+            group.setStatus(request.getStatus());
+
+        if (request.getGuideRollNumber() != null) {
+            User guide = userRepository.findByRollNumber(
+                    request.getGuideRollNumber()
+            ).orElseThrow(() -> new RuntimeException("Guide not found"));
+
+            group.setGuideId(guide);
+        }
+
+        // -------- update members --------
+        if (request.getMembers() == null) return;
+
+        for (GroupMemberUpdateRequest m : request.getMembers()) {
+
+            User student = userRepository.findByRollNumber(
+                    m.getStudentRollNumber()
+            ).orElseThrow(() -> new RuntimeException("Student not found"));
+
+            switch (m.getAction()) {
+
+                case ADD -> {
+                    if (memberRepository
+                            .existsByGroupAndStudentId(group, student)) {
+                        throw new RuntimeException("Student already in group");
+                    }
+
+                    GroupMember member = new GroupMember();
+                    member.setGroup(group);
+                    member.setStudentId(student);
+                    member.setCurrentYear(group.getCurrentYear());
+                    member.setLeader(Boolean.TRUE.equals(m.getLeader()));
+
+                    memberRepository.save(member);
+                }
+
+                case UPDATE -> {
+                    GroupMember member = memberRepository
+                            .findByGroupAndStudentId(group, student)
+                            .orElseThrow(() ->
+                                    new RuntimeException("Member not found"));
+
+                    if (m.getLeader() != null)
+                        member.setLeader(m.getLeader());
+                }
+
+                case REMOVE -> {
+                    GroupMember member = memberRepository
+                            .findByGroupAndStudentId(group, student)
+                            .orElseThrow(() ->
+                                    new RuntimeException("Member not found"));
+
+                    memberRepository.delete(member);
+                }
+            }
+        }
+
+        // optional: ensure only one leader
+        validateSingleLeader(group);
+    }
+    private void validateSingleLeader(StudentGroup group) {
+        long leaders = memberRepository
+                .countByGroupAndLeaderTrue(group);
+
+        if (leaders != 1) {
+            throw new RuntimeException("Exactly one leader required");
+        }
+    }
+
 
 }

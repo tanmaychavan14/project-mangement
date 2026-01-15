@@ -8,4 +8,5 @@ import lombok.Setter;
 @Setter
 public class FacultyResponse {
     private String name;
+    private String rollNumber;
 }

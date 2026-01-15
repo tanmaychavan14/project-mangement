@@ -3,6 +3,7 @@ package com.example.collegeprojectm.controller;
 
 import com.example.collegeprojectm.dtoo.CreateStudentGroupRequest;
 import com.example.collegeprojectm.dtoo.StudentGroupResponse;
+import com.example.collegeprojectm.dtoo.UpdateStudentGroupRequest;
 import com.example.collegeprojectm.service.user.StudentGroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,18 @@ public class StudentGroupController {
                 service.getGroupDetails(groupName, batch, currentYear)
         );
     }
+
+
+    @PatchMapping("/update-group")
+    public ResponseEntity<String> updateGroup(
+            @RequestParam Long groupId,
+            @RequestBody UpdateStudentGroupRequest request) {
+
+        service.updateGroupAndMembers(groupId, request);
+        return ResponseEntity.ok("Group updated successfully");
+    }
+
+
 
 
 }
