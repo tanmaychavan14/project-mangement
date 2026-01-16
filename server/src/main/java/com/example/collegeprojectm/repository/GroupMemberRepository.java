@@ -12,6 +12,11 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
     List<GroupMember> findByGroup(StudentGroup group);
     boolean existsByGroupAndStudentId( StudentGroup group, User student);
     Optional<GroupMember> findByGroupAndStudentId(StudentGroup group, User student);
-
+    List<GroupMember> findByGroupId(Long groupId);
     Long countByGroupAndLeaderTrue( StudentGroup group);
+    Optional<GroupMember> findByStudentId_IdAndCurrentYear(
+            Long studentId,
+            Integer currentYear
+    );
+
 }
