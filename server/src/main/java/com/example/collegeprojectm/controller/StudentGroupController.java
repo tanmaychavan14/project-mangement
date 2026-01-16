@@ -38,27 +38,48 @@ public class StudentGroupController {
     }
 
     @GetMapping("/get-group-data")
-    public ResponseEntity<StudentGroupResponse> getGroup(
+    public ResponseEntity<?> getGroup(
             @RequestParam String groupName,
             @RequestParam String batch,
             @RequestParam Integer currentYear) {
 
-        return ResponseEntity.ok(
-                service.getGroupDetails(groupName, batch, currentYear)
-        );
+        try {
+
+
+            return ResponseEntity.ok(
+                    service.getGroupDetails(groupName, batch, currentYear)
+            );
+        }
+        catch (RuntimeException ex){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ex.getMessage());
+        }
+        catch(Exception  e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
     }
 
 
     @PatchMapping("/update-group")
     public ResponseEntity<String> updateGroup(
+
+
             @RequestParam Long groupId,
             @RequestBody UpdateStudentGroupRequest request) {
+        try {
+            service.updateGroupAndMembers(groupId, request);
+            return ResponseEntity.ok("Group updated successfully");
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ex.getMessage());
 
-        service.updateGroupAndMembers(groupId, request);
-        return ResponseEntity.ok("Group updated successfully");
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
     }
-
-
 
 
 }

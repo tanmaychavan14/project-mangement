@@ -28,6 +28,9 @@ public class WorkPlan {
     @Column(name = "student_year", nullable = false)
     private Integer studentYear;
 
+    @Column(name = "batch" ,nullable = false)
+    private String batch;
+
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
 
