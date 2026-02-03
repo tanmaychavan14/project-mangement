@@ -67,7 +67,14 @@ public class WeeklyReportController {
                 weeklyReportService.getByBatchAndYear(batch, year)
         );
     }
-
+    @GetMapping("/groups/weekly-reports")
+    public ResponseEntity<?> getWeeklyReportsForGroup(
+            @RequestParam Long groupId
+    ) {
+        return ResponseEntity.ok(
+                weeklyReportService.getWeeklyReportsForGroup(groupId)
+        );
+    }
     /* ===== ADMIN FILTER ===== */
     @GetMapping("/admin")
     public ResponseEntity<List<WeeklyReportResponse>> getForAdmin(

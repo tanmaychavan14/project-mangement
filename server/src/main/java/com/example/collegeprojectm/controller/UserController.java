@@ -7,6 +7,9 @@ import com.example.collegeprojectm.service.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,9 +55,15 @@ public class UserController {
 
 
     //find user by roll number;
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     @GetMapping("/getUserByRollNumber")
     public ResponseEntity<?> getUserByRollNumber(@RequestParam String rollNumber){
         try{
+
+            // 🔍 DEBUG — ADD THIS HERE
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println("AUTH = " + auth);
+            System.out.println("AUTHORITIES = " + auth.getAuthorities());
             User user = userService.getUserByRollNumber(rollNumber);
             return ResponseEntity.ok(
             new ApiResponse<>("User with roll Number " +  rollNumber + "fetch Successfully", user)

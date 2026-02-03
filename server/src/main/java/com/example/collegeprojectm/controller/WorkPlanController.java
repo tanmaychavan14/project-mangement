@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/work-plans")
+@RequestMapping("/api/work-plans/admin")
 @RequiredArgsConstructor
 public class WorkPlanController {
 

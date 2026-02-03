@@ -184,6 +184,20 @@ public class WeeklyReportService {
                 .map(this::mapToResponse)
                 .toList();
     }
+    public List<WeeklyReportResponse> getWeeklyReportsForGroup(Long groupId) {
+
+        // optional validation
+        studentGroupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        return weeklyReportRepository
+                .findByGroupId_Id(groupId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+
 
     /* ================= MAPPER ================= */
     private WeeklyReportResponse mapToResponse(WeeklyReport report) {

@@ -18,7 +18,7 @@ public class StudentGroupController {
         this.service = service;
     }
 
-    @PostMapping("/create-group")
+    @PostMapping("/student/create-group")
     public ResponseEntity<String> createGroup(
             @RequestBody CreateStudentGroupRequest request) {
         try{
@@ -36,6 +36,8 @@ public class StudentGroupController {
         }
 
     }
+
+
 
     @GetMapping("/get-group-data-nby")
     public ResponseEntity<?> getGroup(
@@ -97,6 +99,20 @@ public class StudentGroupController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
+    }
+    @GetMapping("/groups/faculty")
+    public ResponseEntity<?> getMyGroups(
+            @RequestParam String rollNumber,
+            @RequestParam String batch,
+            @RequestParam Integer currentYear
+    ) {
+        return ResponseEntity.ok(
+                service.getGroupsForFaculty(
+                        rollNumber,
+                        batch,
+                        currentYear
+                )
+        );
     }
 
     @PatchMapping("/update-group-rollNumber")

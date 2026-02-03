@@ -1,6 +1,7 @@
 package com.example.collegeprojectm.service.user;
 import com.example.collegeprojectm.model.User;
 import com.example.collegeprojectm.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
@@ -9,8 +10,10 @@ import java.util.*;
 public class UserService {
 
     private  final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+        this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
     }
     //Create the User;
@@ -24,6 +27,7 @@ public class UserService {
                             " in batch " +
                             user.getBatch()
             );}
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 

@@ -31,4 +31,6 @@ public interface WeeklyReportRepository extends JpaRepository<WeeklyReport, Long
             Long groupId,
             Integer studentYear
     );
+    List<WeeklyReport> findByGroupId_Id(Long groupId);
+
 }

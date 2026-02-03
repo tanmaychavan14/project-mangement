@@ -81,6 +81,7 @@ public class StudentGroupService {
     }
 
 
+
     public StudentGroupResponse getGroupDetails(
             String groupName, String batch, Integer currentYear) {
 
@@ -123,6 +124,8 @@ public class StudentGroupService {
 
         return response;
     }
+
+
 
     public StudentGroupResponse getGroupDetailsByRollNumber(String rollNumber) {
 
@@ -225,6 +228,62 @@ public class StudentGroupService {
         }).toList();
     }
 
+    public List<StudentGroupResponse> getGroupsForFaculty(
+            String rollNumber,
+            String batch,
+            Integer currentYear
+    ) {
+
+        // 1️⃣ Faculty user
+        User faculty = userRepository.findByRollNumber(rollNumber)
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
+
+        // 2️⃣ Groups where this faculty is guide
+        List<StudentGroup> groups =
+                studentGroupRepository.findByGuideIdAndBatchAndCurrentYear(
+                        faculty,
+                        batch,
+                        currentYear
+                );
+
+        if (groups.isEmpty()) {
+            throw new RuntimeException("No groups assigned for selected batch and year");
+        }
+
+        // 3️⃣ Map to existing StudentGroupResponse
+        return groups.stream().map(group -> {
+
+            StudentGroupResponse response = new StudentGroupResponse();
+            response.setGroupId(group.getId());
+            response.setGroupName(group.getGroupName());
+            response.setBatch(group.getBatch());
+            response.setCurrentYear(group.getCurrentYear());
+            response.setStatus(group.getStatus());
+            response.setProjectTitle(group.getProjectTitle());
+            response.setProjectDomain(group.getProjectDomain());
+
+            // guide (self)
+            FacultyResponse facultyRes = new FacultyResponse();
+            facultyRes.setName(faculty.getName());
+            facultyRes.setRollNumber(faculty.getRollNumber());
+            response.setGuide(facultyRes);
+
+            // members
+            List<GroupMember> members = memberRepository.findByGroup(group);
+            List<GroupMemberResponse> memberResponses = members.stream().map(m -> {
+                GroupMemberResponse r = new GroupMemberResponse();
+                r.setStudentRollNumber(m.getStudentId().getRollNumber());
+                r.setStudentName(m.getStudentId().getName());
+                r.setLeader(m.isLeader());
+                return r;
+            }).toList();
+
+            response.setMembers(memberResponses);
+
+            return response;
+
+        }).toList();
+    }
 
 
     @Transactional
@@ -400,6 +459,7 @@ public class StudentGroupService {
         // ensure exactly one leader
         validateSingleLeader(group);
     }
+
 
     private void validateSingleLeader(StudentGroup group) {
         long leaders = memberRepository
