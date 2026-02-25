@@ -8,6 +8,7 @@ import com.example.collegeprojectm.service.WorkPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ public class WorkPlanController {
     private final WorkPlanService service;
 
     /* CREATE (Admin only ideally) */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody WorkPlanDto dto) {
         try {
@@ -38,6 +40,7 @@ public class WorkPlanController {
         }
     }
     /* UPDATE (Static data but editable) */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping("/update")
     public ResponseEntity<?> update(
             @RequestParam Long id,
@@ -57,6 +60,7 @@ public class WorkPlanController {
     }
 
     /* GET YEAR + BATCH */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STUDENT','ROLE_FACULTY')")
     @GetMapping("/get-work-plan")
     public ResponseEntity<?> getByYearAndBatch(
             @RequestParam Integer studentYear,
@@ -78,6 +82,7 @@ public class WorkPlanController {
     }
 
     /* GET BY DATE */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STUDENT)")
     @GetMapping("/date")
     public ResponseEntity<?> getByDate(
             @RequestParam Integer studentYear,

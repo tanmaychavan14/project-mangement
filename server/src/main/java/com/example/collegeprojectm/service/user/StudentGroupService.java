@@ -1,5 +1,7 @@
 package com.example.collegeprojectm.service.user;
 import com.example.collegeprojectm.dtoo.*;
+import com.example.collegeprojectm.event.GroupCreatedEvent;
+import com.example.collegeprojectm.kafka.GroupEventProducer;
 import com.example.collegeprojectm.model.GroupMember;
 import com.example.collegeprojectm.model.StudentGroup;
 import com.example.collegeprojectm.model.User;
@@ -17,16 +19,70 @@ public class StudentGroupService {
    private final StudentGroupRepository studentGroupRepository;
    private final GroupMemberRepository memberRepository;
    private final UserRepository userRepository;
-
+   private final GroupEventProducer groupEventProducer;
 
     public StudentGroupService(StudentGroupRepository studentGroupRepository ,
                                GroupMemberRepository groupMemberRepository,
-                               UserRepository userRepository){
+                               UserRepository userRepository,
+                               GroupEventProducer groupEventProducer){
 
         this.studentGroupRepository = studentGroupRepository;
         this.memberRepository = groupMemberRepository;
         this.userRepository = userRepository;
+        this.groupEventProducer = groupEventProducer;
     }
+
+
+//    @Transactional
+//    public void createGroupWithMembers(CreateStudentGroupRequest request) {
+//
+//        // 1️⃣ Check uniqueness
+//        if (studentGroupRepository.existsByGroupNameAndBatchAndCurrentYear(
+//                request.getGroupName(),
+//                request.getBatch(),
+//                request.getCurrentYear())) {
+//            throw new RuntimeException("Group already exists");
+//        }
+//
+//        // 2️⃣ Create StudentGroup
+//        StudentGroup group = new StudentGroup();
+//        group.setGroupName(request.getGroupName());
+//        group.setBatch(request.getBatch());
+//        group.setProjectTitle(request.getProjectTitle());
+//        group.setProjectDomain(request.getProjectDomain());
+//        group.setCurrentYear(request.getCurrentYear());
+//        group.setStatus(request.getStatus());
+//
+//        if (request.getGuideRollNumber() != null) {
+//            User guide = userRepository.findByRollNumber(
+//                    request.getGuideRollNumber()
+//            ).orElseThrow(() -> new RuntimeException("Guide not found"));
+//
+//            group.setGuideId(guide);
+//        }
+//
+//
+//        StudentGroup savedGroup = studentGroupRepository.save(group);
+//
+//        // 3️⃣ Create Group Members
+//        for (GroupMemberRequest memberReq : request.getMembers()) {
+//
+//            GroupMember member = new GroupMember();
+//            member.setGroup(savedGroup);
+//            User student = userRepository
+//                    .findByRollNumber(memberReq.getStudentRollNumber())
+//                    .orElseThrow(() -> new RuntimeException("Student not found"));
+//
+//            member.setStudentId(student);
+//
+//            member.setCurrentYear(request.getCurrentYear());
+//            member.setLeader(memberReq.isLeader());
+//
+//            memberRepository.save(member);
+//        }
+//
+
+//    }
 
 
     @Transactional
@@ -40,7 +96,7 @@ public class StudentGroupService {
             throw new RuntimeException("Group already exists");
         }
 
-        // 2️⃣ Create StudentGroup
+        // 2️⃣ Create group
         StudentGroup group = new StudentGroup();
         group.setGroupName(request.getGroupName());
         group.setBatch(request.getBatch());
@@ -49,37 +105,37 @@ public class StudentGroupService {
         group.setCurrentYear(request.getCurrentYear());
         group.setStatus(request.getStatus());
 
-        if (request.getGuideRollNumber() != null) {
-            User guide = userRepository.findByRollNumber(
-                    request.getGuideRollNumber()
-            ).orElseThrow(() -> new RuntimeException("Guide not found"));
-
-            group.setGuideId(guide);
-        }
-
-
         StudentGroup savedGroup = studentGroupRepository.save(group);
 
-        // 3️⃣ Create Group Members
+        // 3️⃣ Save members
         for (GroupMemberRequest memberReq : request.getMembers()) {
 
             GroupMember member = new GroupMember();
             member.setGroup(savedGroup);
+
             User student = userRepository
                     .findByRollNumber(memberReq.getStudentRollNumber())
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             member.setStudentId(student);
-
             member.setCurrentYear(request.getCurrentYear());
             member.setLeader(memberReq.isLeader());
 
             memberRepository.save(member);
         }
 
+        // 4️⃣ Publish Kafka Event (After successful DB save)
 
+        GroupCreatedEvent event = new GroupCreatedEvent(
+                savedGroup.getId(),
+                savedGroup.getGroupName(),
+                savedGroup.getBatch(),
+                savedGroup.getCurrentYear(),
+                request.getGuideRollNumber()
+        );
+
+        groupEventProducer.publishGroupCreatedEvent(event);
     }
-
 
 
     public StudentGroupResponse getGroupDetails(

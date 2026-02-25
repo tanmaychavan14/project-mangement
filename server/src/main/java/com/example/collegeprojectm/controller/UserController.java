@@ -1,6 +1,7 @@
 package com.example.collegeprojectm.controller;
 
 
+import com.example.collegeprojectm.dtoo.PasswordUpdateRequest;
 import com.example.collegeprojectm.model.ApiResponse;
 import com.example.collegeprojectm.model.User;
 import com.example.collegeprojectm.service.user.UserService;
@@ -55,8 +56,9 @@ public class UserController {
 
 
     //find user by roll number;
-    @PreAuthorize("hasRole('ROLE_STUDENT')")
+
     @GetMapping("/getUserByRollNumber")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     public ResponseEntity<?> getUserByRollNumber(@RequestParam String rollNumber){
         try{
 
@@ -77,6 +79,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/users/by-batch")
     public ResponseEntity<?> getUsersByBatch(@RequestParam String batch) {
         try {
@@ -96,7 +99,9 @@ public class UserController {
         }
     }
 
+
     @PatchMapping("/update-user")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     public ResponseEntity<?> updateUserData(
             @RequestParam String rollNumber,
             @RequestBody User user
@@ -119,5 +124,19 @@ public class UserController {
                       .body(e.getMessage());
           }
     }
+    @PatchMapping("/student/update-password")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public ResponseEntity<?> updatePassword(
+            @RequestBody PasswordUpdateRequest request,
+            Authentication authentication
+    ) {
+        // rollNumber comes from JWT subject
+        String rollNumber = authentication.getName();
+
+        userService.updatePassword(rollNumber, request);
+
+        return ResponseEntity.ok("Password updated successfully");
+    }
+
 
 }

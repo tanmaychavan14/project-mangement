@@ -1,6 +1,8 @@
 package com.example.collegeprojectm.service.user;
+import com.example.collegeprojectm.dtoo.PasswordUpdateRequest;
 import com.example.collegeprojectm.model.User;
 import com.example.collegeprojectm.repository.UserRepository;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -82,7 +84,29 @@ public class UserService {
 
     }
 
+    public void updatePassword(
+            String loggedInRollNumber,
+            PasswordUpdateRequest request
+    ) {
 
+        User user = userRepository.findByRollNumber(loggedInRollNumber)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
 
+        // verify current password
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPassword()
+        )) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
 
+        // encode & update new password
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+
+        userRepository.save(user);
+    }
 }

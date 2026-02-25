@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public class WeeklyReportController {
         this.weeklyReportService=weeklyReportService;
     }
     /* ===== CREATE ===== */
+
+    @PreAuthorize("hasAnyAuthority('ROLE_FACULTY')")
     @PostMapping("/create-report")
     public ResponseEntity<WeeklyReportResponse> create(
             @Valid @RequestBody CreateWeeklyReportRequest request
@@ -49,6 +52,7 @@ public class WeeklyReportController {
     }
 
     /* ===== UPDATE ===== */
+
     @PatchMapping("/patch-by-id")
     public ResponseEntity<WeeklyReportResponse> update(
             @RequestParam Long id,
@@ -58,6 +62,7 @@ public class WeeklyReportController {
     }
 
     /* ===== GET BY BATCH + YEAR ===== */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @GetMapping("/batch-year")
     public ResponseEntity<List<WeeklyReportResponse>> getByBatchAndYear(
             @RequestParam String batch,
@@ -67,6 +72,8 @@ public class WeeklyReportController {
                 weeklyReportService.getByBatchAndYear(batch, year)
         );
     }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_STUDENT')")
     @GetMapping("/groups/weekly-reports")
     public ResponseEntity<?> getWeeklyReportsForGroup(
             @RequestParam Long groupId
@@ -76,6 +83,7 @@ public class WeeklyReportController {
         );
     }
     /* ===== ADMIN FILTER ===== */
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @GetMapping("/admin")
     public ResponseEntity<List<WeeklyReportResponse>> getForAdmin(
             @RequestParam String groupName,
@@ -87,6 +95,7 @@ public class WeeklyReportController {
         );
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_STUDENT')")
     @GetMapping("/weekly-reports-rollNumber")
     public List<WeeklyReportResponse> getMyWeeklyReports(
             @RequestParam(required = false) String rollNumber

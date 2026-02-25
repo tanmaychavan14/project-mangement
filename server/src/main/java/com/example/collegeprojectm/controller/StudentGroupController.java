@@ -7,6 +7,7 @@ import com.example.collegeprojectm.dtoo.UpdateStudentGroupRequest;
 import com.example.collegeprojectm.service.user.StudentGroupService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ public class StudentGroupController {
         this.service = service;
     }
 
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     @PostMapping("/student/create-group")
     public ResponseEntity<String> createGroup(
             @RequestBody CreateStudentGroupRequest request) {
@@ -38,7 +40,7 @@ public class StudentGroupController {
     }
 
 
-
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     @GetMapping("/get-group-data-nby")
     public ResponseEntity<?> getGroup(
             @RequestParam String groupName,
@@ -62,7 +64,7 @@ public class StudentGroupController {
         }
     }
 
-
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     @GetMapping("/student/group")
     public ResponseEntity<?> getMyGroup(
             @RequestParam String rollNumber
@@ -72,6 +74,7 @@ public class StudentGroupController {
         );
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/groups-batch-year")
     public ResponseEntity<?> getGroupsByBatchAndYear(
             @RequestParam String batch,
@@ -81,6 +84,8 @@ public class StudentGroupController {
                 service.getGroupsByBatchAndYear(batch, year)
         );
     }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PatchMapping("/update-group")
     public ResponseEntity<String> updateGroup(
 
@@ -100,6 +105,8 @@ public class StudentGroupController {
                     .body(e.getMessage());
         }
     }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_FACULTY')")
     @GetMapping("/groups/faculty")
     public ResponseEntity<?> getMyGroups(
             @RequestParam String rollNumber,
@@ -115,6 +122,7 @@ public class StudentGroupController {
         );
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_STUDENT')")
     @PatchMapping("/update-group-rollNumber")
     public ResponseEntity<String> updateGroupByRollNumber(
             @RequestParam String rollNumber,
